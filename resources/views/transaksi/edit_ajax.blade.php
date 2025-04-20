@@ -45,13 +45,13 @@
             <!-- Tanggal Mulai (Read Only) -->
             <div class="form-group">
                 <label>Tanggal Mulai</label>
-                <input type="date" class="form-control" value="{{ $transaksi->tanggal_mulai }}" readonly>
+                <input type="date" class="form-control" value="{{ date('Y-m-d', strtotime($transaksi->tanggal_mulai)) }}" readonly>
             </div>
 
             <!-- Tanggal Selesai (Read Only) -->
             <div class="form-group">
                 <label>Tanggal Selesai</label>
-                <input type="date" class="form-control" value="{{ $transaksi->tanggal_selesai }}" readonly>
+                <input type="date" class="form-control" value="{{ date('Y-m-d', strtotime($transaksi->tanggal_selesai)) }}" readonly>
             </div>
 
             <!-- Total Harga (Read Only) -->

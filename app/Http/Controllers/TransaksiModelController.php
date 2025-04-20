@@ -91,6 +91,29 @@ class TransaksiModelController extends Controller
             ], 422);
         }
 
+        // Validasi stok sebelum transaksi
+        foreach ($detailTransaksi as $detail) {
+            $stok = DB::table('stok_models')
+                ->where('alat_id', $detail['alat_id'])
+                ->first();
+
+            if (!$stok) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Stok tidak ditemukan untuk alat dengan ID: ' . $detail['alat_id']
+                ], 422);
+            }
+
+            $stokTersedia = $stok->jumlah_stok - $stok->jumlah_disewa;
+            if ($stokTersedia < $detail['jumlah']) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Stok tidak mencukupi untuk alat dengan ID: ' . $detail['alat_id'] .
+                        '. Stok tersedia: ' . $stokTersedia . ', Jumlah yang diminta: ' . $detail['jumlah']
+                ], 422);
+            }
+        }
+
         $durasi = Carbon::parse($request->tanggal_mulai)
             ->diffInDays(Carbon::parse($request->tanggal_selesai)) + 1;
 
@@ -118,6 +141,7 @@ class TransaksiModelController extends Controller
                     'updated_at' => now()
                 ]);
 
+                // Update stok - increment jumlah_disewa
                 DB::table('stok_models')
                     ->where('alat_id', $detail['alat_id'])
                     ->increment('jumlah_disewa', $detail['jumlah']);
@@ -165,17 +189,45 @@ class TransaksiModelController extends Controller
                 ]);
             }
 
-            $transaksi = TransaksiModel::find($id);
+            $transaksi = TransaksiModel::with('detailTransaksi')->find($id);
 
             if ($transaksi) {
-                $transaksi->update([
-                    'status' => $request->status
-                ]);
+                DB::beginTransaction();
+                try {
+                    // Jika status berubah menjadi selesai, kurangi jumlah_disewa
+                    if ($request->status == 'selesai' && $transaksi->status != 'selesai') {
+                        foreach ($transaksi->detailTransaksi as $detail) {
+                            DB::table('stok_models')
+                                ->where('alat_id', $detail->alat_id)
+                                ->decrement('jumlah_disewa', $detail->jumlah);
+                        }
+                    }
+                    // Jika status berubah dari selesai ke status lain, tambah jumlah_disewa
+                    else if ($transaksi->status == 'selesai' && $request->status != 'selesai') {
+                        foreach ($transaksi->detailTransaksi as $detail) {
+                            DB::table('stok_models')
+                                ->where('alat_id', $detail->alat_id)
+                                ->increment('jumlah_disewa', $detail->jumlah);
+                        }
+                    }
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Status transaksi berhasil diupdate',
-                ]);
+                    $transaksi->update([
+                        'status' => $request->status
+                    ]);
+
+                    DB::commit();
+
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Status transaksi berhasil diupdate',
+                    ]);
+                } catch (\Exception $e) {
+                    DB::rollback();
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Terjadi kesalahan saat mengupdate status: ' . $e->getMessage(),
+                    ], 500);
+                }
             } else {
                 return response()->json([
                     'status' => false,
@@ -196,15 +248,39 @@ class TransaksiModelController extends Controller
     public function delete_ajax(Request $request, $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
-            $transaksi = TransaksiModel::find($id);
+            $transaksi = TransaksiModel::with('detailTransaksi')->find($id);
 
             if ($transaksi) {
-                $transaksi->delete();
+                DB::beginTransaction();
+                try {
+                    // Kurangi jumlah_disewa untuk setiap detail transaksi
+                    foreach ($transaksi->detailTransaksi as $detail) {
+                        DB::table('stok_models')
+                            ->where('alat_id', $detail->alat_id)
+                            ->decrement('jumlah_disewa', $detail->jumlah);
+                    }
 
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data berhasil dihapus',
-                ]);
+                    // Hapus detail transaksi terlebih dahulu
+                    DB::table('detail_transaksis')
+                        ->where('transaksi_id', $transaksi->transaksi_id)
+                        ->delete();
+
+                    // Hapus transaksi
+                    $transaksi->delete();
+
+                    DB::commit();
+
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data berhasil dihapus',
+                    ]);
+                } catch (\Exception $e) {
+                    DB::rollback();
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Terjadi kesalahan saat menghapus data: ' . $e->getMessage(),
+                    ], 500);
+                }
             }
 
             return response()->json([
