@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
             StokModelsSeeder::class,
             TransaksiModelsSeeder::class,
             DetailTransaksisSeeder::class,
+            UserSeeder::class
         ]);
     }
 }

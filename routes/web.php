@@ -6,10 +6,23 @@ use App\Http\Controllers\{
     KategoriModelController,
     AlatModelController,
     StokModelController,
-    TransaksiModelController
+    TransaksiModelController,
+    AuthController
 };
 
-Route::get('/', [WelcomeController::class, 'index']);
+// Jika ada parameter {id}, maka nilainya harus berupa angka
+Route::pattern('id', '[0-9]+');
+
+// Route login
+Route::get('login', [AuthController::class, 'login'])->name('login');
+Route::post('login', [AuthController::class, 'postlogin']);
+
+// Route logout (harus sudah login/authenticated)
+Route::get('logout', [AuthController::class, 'logout'])->middleware('auth');
+
+// Semua route dalam grup ini hanya bisa diakses jika sudah login
+Route::middleware(['auth'])->group(function () {
+    Route::get('/', [WelcomeController::class, 'index']);
 
 Route::group(['prefix' => 'kategori'], function () {
     Route::get('/', [KategoriModelController::class, 'index']);
@@ -59,4 +72,5 @@ Route::group(['prefix' => 'stok'], function () {
     Route::put('/{id}/update_ajax', [StokModelController::class, 'update_ajax']);
     Route::get('/{id}/delete_ajax', [StokModelController::class, 'confirm_ajax']);
     Route::delete('/{id}/delete_ajax', [StokModelController::class, 'delete_ajax']);
+});
 });

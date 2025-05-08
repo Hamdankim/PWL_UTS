@@ -26,15 +26,25 @@
                 </a> </li>
             <li class="nav-header">Data Transaksi</li>
             <li class="nav-item"> <a href="{{ url('/stok') }}"
-                    class="nav-link {{ $activeMenu == 'stok' ? 'active' : '' }} "> <i
-                        class="nav-icon fas fa-cubes"></i>
+                    class="nav-link {{ $activeMenu == 'stok' ? 'active' : '' }} "> <i class="nav-icon fas fa-cubes"></i>
                     <p>Stok Alat</p>
                 </a> </li>
-            <li class="nav-item"> <a href="{{ url('/transaksi') }}"
+                <li class="nav-item"> <a href="{{ url('/transaksi') }}"
                     class="nav-link {{ $activeMenu == 'transaksi' ? 'active' : '' }} "> <i
                         class="nav-icon fas fa-cash-register"></i>
                     <p>Transaksi Persewaan</p>
                 </a> </li>
+
+            <li class="nav-item mt-3">
+              <form method="GET" action="{{ url('logout') }}">
+                @csrf
+                <button type="submit" class="nav-link bg-danger text-white" style="border: none; width: 100%; text-align: left;">
+                  <i class="nav-icon fas fa-sign-out-alt"></i>
+                  <p>Logout</p>
+                </button>
+              </form>
+            </li>
         </ul>
+
     </nav>
 </div>
