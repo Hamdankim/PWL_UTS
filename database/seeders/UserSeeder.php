@@ -15,13 +15,26 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         DB::table('users')->insert([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'email_verified_at' => now(),
-            'password' => Hash::make('password'), // Gantilah dengan password yang aman
-            'remember_token' => Str::random(10),
-            'created_at' => now(),
-            'updated_at' => now(),
+            [
+                'name' => 'Admin User',
+                'email' => 'admin@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'), // Ganti di production
+                'role' => 'admin',
+                'remember_token' => Str::random(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'User',
+                'email' => 'tech@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('password'),
+                'role' => 'user',
+                'remember_token' => Str::random(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 }
