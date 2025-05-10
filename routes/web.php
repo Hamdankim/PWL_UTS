@@ -9,6 +9,8 @@ use App\Http\Controllers\{
     TransaksiModelController,
     AuthController
 };
+use App\Models\AlatModel;
+use App\Models\KategoriModel;
 
 // Jika ada parameter {id}, maka nilainya harus berupa angka
 Route::pattern('id', '[0-9]+');
@@ -34,6 +36,8 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/kategori/{id}/update_ajax', [KategoriModelController::class, 'update_ajax']);
     Route::get('/kategori/{id}/delete_ajax', [KategoriModelController::class, 'confirm_ajax']);
     Route::delete('/kategori/{id}/delete_ajax', [KategoriModelController::class, 'delete_ajax']);
+    Route::get('/kategori/import', [KategoriModelController::class, 'import']);
+    Route::post('/kategori/import_ajax', [KategoriModelController::class, 'import_ajax']);
 });
 
 Route::middleware(['authorize:admin']) -> group(function () {
@@ -60,6 +64,8 @@ Route::middleware(['authorize:admin,user']) -> group(function () {
     Route::put('/alat/{id}/update_ajax', [AlatModelController::class, 'update_ajax']);
     Route::get('/alat/{id}/delete_ajax', [AlatModelController::class, 'confirm_ajax']);
     Route::delete('/alat/{id}/delete_ajax', [AlatModelController::class, 'delete_ajax']);
+    Route::get('/alat/import', [AlatModelController::class, 'import']);
+    Route::post('/alat/import_ajax', [AlatModelController::class, 'import_ajax']);
 });
 
 Route::middleware(['authorize:admin,user']) -> group(function () {

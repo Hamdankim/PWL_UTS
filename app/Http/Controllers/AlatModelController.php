@@ -105,102 +105,85 @@ class AlatModelController extends Controller
         return redirect('/');
     }
 
-    // Fungsi AJAX untuk menampilkan form edit alat
-    public function edit_ajax(string $id)
+    public function edit_ajax($id)
     {
-        // Ambil data alat berdasarkan ID
         $alat = AlatModel::find($id);
-
-        // Ambil daftar kategori (id dan nama)
         $kategori = KategoriModel::select('kategori_id', 'kategori_nama')->get();
 
-        // Kirim data ke view edit_ajax
         return view('alat.edit_ajax', [
-            'alat'  => $alat,
-            'kategori' => $kategori,
+            'alat' => $alat,
+            'kategori' => $kategori
         ]);
     }
 
-    // Fungsi AJAX untuk menyimpan perubahan data alat
+
     public function update_ajax(Request $request, $id)
     {
-        // Cek apakah request berasal dari AJAX
         if ($request->ajax() || $request->wantsJson()) {
-            // Aturan validasi
             $rules = [
-                'alat_kode'  => 'required|string|min:6|unique:alat_models,alat_kode,' . $id . ',alat_id', // Alat kode harus diisi, minimal 3 karakter, dan unik kecuali untuk alat dengan id yang sedang diedit
-                'alat_nama'  => 'required|string|max:100', // Nama alat harus diisi, berupa string, maksimal 100 karakter
-                'harga_sewa'   => 'required|numeric|min:0', // Harga beli harus diisi, berupa angka, dan minimal 0
-                'kategori_id'  => 'required|integer|exists:kategori_models,kategori_id' // Kategori ID harus diisi, berupa angka, dan harus ada di tabel kategori
+                'alat_kode'  => 'required|string|min:6|unique:alat_models,alat_kode,' . $id . ',alat_id',
+                'alat_nama'  => 'required|string|max:100',
+                'harga_sewa' => 'required|numeric|min:0',
+                'kategori_id' => 'required|integer|exists:kategori_models,kategori_id'
             ];
 
-            // Validasi request
             $validator = Validator::make($request->all(), $rules);
 
-            // Jika validasi gagal, kirim respon JSON
             if ($validator->fails()) {
                 return response()->json([
-                    'status'   => false, // Respon JSON: true = berhasil, false = gagal
-                    'message'  => 'Validasi gagal.',
-                    'msgField' => $validator->errors(), // Menunjukkan field yang error
+                    'status'   => false,
+                    'message'  => 'Validasi Gagal',
+                    'msgField' => $validator->errors()
                 ]);
             }
 
-            // Cari alat berdasarkan ID
             $alat = AlatModel::find($id);
-
             if ($alat) {
-                // Update data alat
                 $alat->update($request->all());
-
                 return response()->json([
-                    'status'  => true,
-                    'message' => 'Data berhasil diupdate',
-                ]);
-            } else {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Data tidak ditemukan',
-                ]);
-            }
-        }
-
-        return redirect('/');
-    }
-
-    // Fungsi AJAX untuk menampilkan konfirmasi hapus alat
-    public function confirm_ajax(string $id)
-    {
-        $alat = AlatModel::find($id);
-        return view('alat.confirm_ajax', ['alat' => $alat]);
-    }
-
-    // Fungsi AJAX untuk menghapus alat
-    public function delete_ajax(Request $request, $id)
-    {
-        // Cek apakah request berasal dari AJAX
-        if ($request->ajax() || $request->wantsJson()) {
-            // Cari alat berdasarkan ID
-            $alat = AlatModel::find($id);
-
-            if ($alat) {
-                // Hapus data alat
-                $alat->delete();
-
-                return response()->json([
-                    'status'  => true,
-                    'message' => 'Data berhasil dihapus',
+                    'status' => true,
+                    'message' => 'Data berhasil diupdate'
                 ]);
             }
 
             return response()->json([
-                'status'  => false,
-                'message' => 'Data tidak ditemukan',
+                'status' => false,
+                'message' => 'Data tidak ditemukan'
             ]);
         }
 
         return redirect('/');
     }
+
+
+    public function confirm_ajax($id)
+    {
+        $alat = AlatModel::find($id);
+        return view('alat.confirm_ajax', ['alat' => $alat]);
+    }
+
+
+    public function delete_ajax(Request $request, $id)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $alat = AlatModel::find($id);
+            if ($alat) {
+                $alat->delete();
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data berhasil dihapus'
+                ]);
+            }
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Data tidak ditemukan'
+            ]);
+        }
+
+        return redirect('/');
+    }
+
 
     public function show_ajax(string $id)
     {
@@ -208,5 +191,68 @@ class AlatModelController extends Controller
         return view('alat.show_ajax', [
             'alat' => $alat
         ]);
+    }
+
+    public function import()
+    {
+        return view('alat.import');
+    }
+
+    public function import_ajax(Request $request)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $rules = [
+                'file_alat' => ['required', 'mimes:xlsx', 'max:1024']
+            ];
+
+            $validator = Validator::make($request->all(), $rules);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Validasi Gagal',
+                    'msgField' => $validator->errors()
+                ]);
+            }
+
+            $file = $request->file('file_alat');
+            $reader = \PhpOffice\PhpSpreadsheet\IOFactory::createReader('Xlsx');
+            $reader->setReadDataOnly(true);
+
+            $spreadsheet = $reader->load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            $data = $sheet->toArray(null, false, true, true);
+
+            $insert = [];
+            if (count($data) > 1) {
+                foreach ($data as $index => $row) {
+                    if ($index > 1) {
+                        $insert[] = [
+                            'kategori_id' => $row['A'],
+                            'alat_kode'   => $row['B'],
+                            'alat_nama'   => $row['C'],
+                            'harga_sewa'  => $row['D'],
+                            'created_at'  => now(),
+                        ];
+                    }
+                }
+
+                if (count($insert)) {
+                    AlatModel::insertOrIgnore($insert);
+                }
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Data berhasil diimport'
+                ]);
+            }
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Tidak ada data yang diimport'
+            ]);
+        }
+
+        return redirect('/');
     }
 }
