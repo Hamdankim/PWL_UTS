@@ -24,6 +24,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'foto',
+        'role'
     ];
 
     /**
@@ -49,5 +51,15 @@ class User extends Authenticatable
     public function getRole()
     {
         return $this->role;
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isUser()
+    {
+        return $this->role === 'user';
     }
 }

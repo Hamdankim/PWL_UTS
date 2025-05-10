@@ -13,6 +13,11 @@
                         class="nav-icon fas fa-tachometer-alt"></i>
                     <p>Dashboard</p>
                 </a> </li>
+             <li class="nav-item"> <a href="{{ url('profile') }}"
+                    class="nav-link {{ $activeMenu == 'profile' ? 'active' : '' }} "> <i
+                        class="nav-icon fas fa-user"></i>
+                    <p>Profil</p>
+                </a> </li>
             <li class="nav-header">Data Alat</li>
             <li class="nav-item"> <a href="{{ url('/kategori') }}"
                     class="nav-link {{ $activeMenu == 'kategori' ? 'active' : '' }} "> <i

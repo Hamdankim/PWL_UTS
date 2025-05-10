@@ -16,7 +16,7 @@ class AlatModelController extends Controller
     {
         $breadcrumb = (object) [
             'title' => 'Daftar Alat',
-            'list'  => ['Home', 'Alat']
+            'list' => ['Home', 'Alat']
         ];
 
         $page = (object) [
@@ -29,8 +29,8 @@ class AlatModelController extends Controller
 
         return view('alat.index', [
             'breadcrumb' => $breadcrumb,
-            'page'       => $page,
-            'kategori'   => $kategori,
+            'page' => $page,
+            'kategori' => $kategori,
             'activeMenu' => $activeMenu
         ]);
     }
@@ -49,7 +49,7 @@ class AlatModelController extends Controller
         return DataTables::of($alats)
             ->addIndexColumn() // Menambahkan kolom index otomatis
             ->addColumn('aksi', function ($alat) {
-                $btn  = '<button onclick="modalAction(\'' . url('/alat/' . $alat->alat_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
+                $btn = '<button onclick="modalAction(\'' . url('/alat/' . $alat->alat_id . '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/alat/' . $alat->alat_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
                 $btn .= '<button onclick="modalAction(\'' . url('/alat/' . $alat->alat_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
 
@@ -74,10 +74,10 @@ class AlatModelController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             // Aturan validasi data input
             $rules = [
-                'alat_kode'  => 'required|string|min:6|unique:alat_models,alat_kode', // Alat kode harus diisi, minimal 3 karakter, dan unik
-                'alat_nama'  => 'required|string|max:100', // Nama alat harus diisi, berupa string, maksimal 100 karakter
-                'harga_sewa'   => 'required|numeric|min:0', // Harga beli harus diisi, berupa angka, dan minimal 0
-                'kategori_id'  => 'required|integer|exists:kategori_models,kategori_id' // Kategori ID harus diisi, berupa angka, dan harus ada di tabel kategori
+                'alat_kode' => 'required|string|min:6|unique:alat_models,alat_kode', // Alat kode harus diisi, minimal 3 karakter, dan unik
+                'alat_nama' => 'required|string|max:100', // Nama alat harus diisi, berupa string, maksimal 100 karakter
+                'harga_sewa' => 'required|numeric|min:0', // Harga beli harus diisi, berupa angka, dan minimal 0
+                'kategori_id' => 'required|integer|exists:kategori_models,kategori_id' // Kategori ID harus diisi, berupa angka, dan harus ada di tabel kategori
             ];
 
             // Validasi input
@@ -86,8 +86,8 @@ class AlatModelController extends Controller
             // Jika validasi gagal, kirim respon JSON dengan error
             if ($validator->fails()) {
                 return response()->json([
-                    'status'   => false, // false menunjukkan validasi gagal
-                    'message'  => 'Validasi Gagal',
+                    'status' => false, // false menunjukkan validasi gagal
+                    'message' => 'Validasi Gagal',
                     'msgField' => $validator->errors(), // Pesan error validasi
                 ]);
             }
@@ -97,7 +97,7 @@ class AlatModelController extends Controller
 
             // Kirim respon sukses
             return response()->json([
-                'status'  => true,
+                'status' => true,
                 'message' => 'Data alat berhasil disimpan',
             ]);
         }
@@ -122,8 +122,8 @@ class AlatModelController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $rules = [
-                'alat_kode'  => 'required|string|min:6|unique:alat_models,alat_kode,' . $id . ',alat_id',
-                'alat_nama'  => 'required|string|max:100',
+                'alat_kode' => 'required|string|min:6|unique:alat_models,alat_kode,' . $id . ',alat_id',
+                'alat_nama' => 'required|string|max:100',
                 'harga_sewa' => 'required|numeric|min:0',
                 'kategori_id' => 'required|integer|exists:kategori_models,kategori_id'
             ];
@@ -132,8 +132,8 @@ class AlatModelController extends Controller
 
             if ($validator->fails()) {
                 return response()->json([
-                    'status'   => false,
-                    'message'  => 'Validasi Gagal',
+                    'status' => false,
+                    'message' => 'Validasi Gagal',
                     'msgField' => $validator->errors()
                 ]);
             }
@@ -230,10 +230,10 @@ class AlatModelController extends Controller
                     if ($index > 1) {
                         $insert[] = [
                             'kategori_id' => $row['A'],
-                            'alat_kode'   => $row['B'],
-                            'alat_nama'   => $row['C'],
-                            'harga_sewa'  => $row['D'],
-                            'created_at'  => now(),
+                            'alat_kode' => $row['B'],
+                            'alat_nama' => $row['C'],
+                            'harga_sewa' => $row['D'],
+                            'created_at' => now(),
                         ];
                     }
                 }
@@ -257,72 +257,72 @@ class AlatModelController extends Controller
         return redirect('/');
     }
 
-public function export_excel()
-{
-    $alat = AlatModel::select('kategori_id', 'alat_kode', 'alat_nama', 'harga_sewa')
-        ->orderBy('kategori_id')
-        ->with('kategori')
-        ->get();
+    public function export_excel()
+    {
+        $alat = AlatModel::select('kategori_id', 'alat_kode', 'alat_nama', 'harga_sewa')
+            ->orderBy('kategori_id')
+            ->with('kategori')
+            ->get();
 
-    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
 
-    $sheet->setCellValue('A1', 'No');
-    $sheet->setCellValue('B1', 'Kode Alat');
-    $sheet->setCellValue('C1', 'Nama Alat');
-    $sheet->setCellValue('D1', 'Harga Sewa');
-    $sheet->setCellValue('E1', 'Kategori');
+        $sheet->setCellValue('A1', 'No');
+        $sheet->setCellValue('B1', 'Kode Alat');
+        $sheet->setCellValue('C1', 'Nama Alat');
+        $sheet->setCellValue('D1', 'Harga Sewa');
+        $sheet->setCellValue('E1', 'Kategori');
 
-    $sheet->getStyle('A1:E1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:E1')->getFont()->setBold(true);
 
-    $no = 1;
-    $baris = 2;
-    foreach ($alat as $value) {
-        $sheet->setCellValue('A' . $baris, $no);
-        $sheet->setCellValue('B' . $baris, $value->alat_kode);
-        $sheet->setCellValue('C' . $baris, $value->alat_nama);
-        $sheet->setCellValue('D' . $baris, $value->harga_sewa);
-        $sheet->setCellValue('E' . $baris, $value->kategori->kategori_nama ?? '-');
-        $baris++;
-        $no++;
+        $no = 1;
+        $baris = 2;
+        foreach ($alat as $value) {
+            $sheet->setCellValue('A' . $baris, $no);
+            $sheet->setCellValue('B' . $baris, $value->alat_kode);
+            $sheet->setCellValue('C' . $baris, $value->alat_nama);
+            $sheet->setCellValue('D' . $baris, $value->harga_sewa);
+            $sheet->setCellValue('E' . $baris, $value->kategori->kategori_nama ?? '-');
+            $baris++;
+            $no++;
+        }
+
+        foreach (range('A', 'E') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
+        }
+
+        $sheet->setTitle('Data Alat');
+
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Data Alat ' . date('Y-m-d H-i-s') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1');
+        header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+
+        $writer->save('php://output');
+        exit;
     }
 
-    foreach (range('A', 'E') as $columnID) {
-        $sheet->getColumnDimension($columnID)->setAutoSize(true);
+    public function export_pdf()
+    {
+        $alat = AlatModel::select('kategori_id', 'alat_kode', 'alat_nama', 'harga_sewa')
+            ->orderBy('kategori_id')
+            ->orderBy('alat_kode')
+            ->with('kategori')
+            ->get();
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('alat.export_pdf', ['alat' => $alat]);
+        $pdf->setPaper('a4', 'portrait');
+        $pdf->setOption(['isRemoteEnabled' => true]);
+        $pdf->render();
+
+        return $pdf->stream('Data Alat ' . date('Y-m-d H:i:s') . '.pdf');
     }
-
-    $sheet->setTitle('Data Alat');
-
-    $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-    $filename = 'Data Alat ' . date('Y-m-d H-i-s') . '.xlsx';
-
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header('Content-Disposition: attachment;filename="' . $filename . '"');
-    header('Cache-Control: max-age=0');
-    header('Cache-Control: max-age=1');
-    header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
-    header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
-    header('Cache-Control: cache, must-revalidate');
-    header('Pragma: public');
-
-    $writer->save('php://output');
-    exit;
-}
-
-public function export_pdf()
-{
-    $alat = AlatModel::select('kategori_id', 'alat_kode', 'alat_nama', 'harga_sewa')
-        ->orderBy('kategori_id')
-        ->orderBy('alat_kode')
-        ->with('kategori')
-        ->get();
-
-    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('alat.export_pdf', ['alat' => $alat]);
-    $pdf->setPaper('a4', 'portrait');
-    $pdf->setOption(['isRemoteEnabled' => true]);
-    $pdf->render();
-
-    return $pdf->stream('Data Alat ' . date('Y-m-d H:i:s') . '.pdf');
-}
 
 }
