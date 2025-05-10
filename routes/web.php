@@ -38,6 +38,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/kategori/{id}/delete_ajax', [KategoriModelController::class, 'delete_ajax']);
     Route::get('/kategori/import', [KategoriModelController::class, 'import']);
     Route::post('/kategori/import_ajax', [KategoriModelController::class, 'import_ajax']);
+    Route::get('/kategori/export_excel', [KategoriModelController::class, 'export_excel']);
 });
 
 Route::middleware(['authorize:admin']) -> group(function () {
@@ -66,6 +67,7 @@ Route::middleware(['authorize:admin,user']) -> group(function () {
     Route::delete('/alat/{id}/delete_ajax', [AlatModelController::class, 'delete_ajax']);
     Route::get('/alat/import', [AlatModelController::class, 'import']);
     Route::post('/alat/import_ajax', [AlatModelController::class, 'import_ajax']);
+    Route::get('/alat/export_excel', [AlatModelController::class, 'export_excel']);
 });
 
 Route::middleware(['authorize:admin,user']) -> group(function () {
