@@ -68,6 +68,7 @@ Route::middleware(['authorize:admin,user']) -> group(function () {
     Route::get('/alat/import', [AlatModelController::class, 'import']);
     Route::post('/alat/import_ajax', [AlatModelController::class, 'import_ajax']);
     Route::get('/alat/export_excel', [AlatModelController::class, 'export_excel']);
+    Route::get('/alat/export_pdf', [AlatModelController::class, 'export_pdf']);
 });
 
 Route::middleware(['authorize:admin,user']) -> group(function () {

@@ -308,4 +308,21 @@ public function export_excel()
     $writer->save('php://output');
     exit;
 }
+
+public function export_pdf()
+{
+    $alat = AlatModel::select('kategori_id', 'alat_kode', 'alat_nama', 'harga_sewa')
+        ->orderBy('kategori_id')
+        ->orderBy('alat_kode')
+        ->with('kategori')
+        ->get();
+
+    $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('alat.export_pdf', ['alat' => $alat]);
+    $pdf->setPaper('a4', 'portrait');
+    $pdf->setOption(['isRemoteEnabled' => true]);
+    $pdf->render();
+
+    return $pdf->stream('Data Alat ' . date('Y-m-d H:i:s') . '.pdf');
+}
+
 }
